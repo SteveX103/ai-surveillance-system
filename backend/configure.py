@@ -22,8 +22,4 @@ def get_today_folder():
     today = dt.now().strftime("%d-%m-%y")
     folder_path = os.path.join(UNKNOWN_FACES_DIR, today)
     os.makedirs(folder_path, exist_ok = True)
-    return folder_path
-
-                               
-                    
-                               
+    return folder_path                             
