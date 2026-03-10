@@ -13,7 +13,7 @@ class Database:
         except Exception as e:
          print ("Error connecting to MongoDB:", e)
 
-    def log_unknown_detecttion(self. image_path , timestamp=None):
+    def log_unknown_detection(self, image_path, timestamp=None):
         try :
            if timestamp is None:
               timestamp = dt.now()

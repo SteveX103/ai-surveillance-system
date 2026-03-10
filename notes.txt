@@ -1,12 +1,21 @@
-flask==3.0.0
-flask-cors==4.0.0
-opencv-python==4.9.0.80
-pymongo==4.6.1
-pillow==10.2.0
-numpy==1.26.3
-python-dotenv==1.0.0
-dnspython==2.5.0
+make virtual env:
+python -m venv venv 
+
+then activate:
+venv\Scripts\activate
+
+
+then install:
+
+flask
+flask-cors
+opencv-python
+pymongo
+pillow
+numpy
+python-dotenv
+dnspython
 pip install dlib-19.24.1-cp311-cp311-win_amd64.whl
-face-recognition==1.3.0
+face-recognition
 
 
