@@ -31,4 +31,27 @@ class FaceRecognitionSystem:
 
         print(f"Total known faces loaded: {len(self.known_face_encodings)}")
 
-    def register_new_face()
+    def register_new_face(self,image_path, name):
+        try:
+            image = fr.load_image_file(image_path)
+            face_encodings = fr.face_encodings(image)
+            if len(face_encodings) == 0:
+                print("No face in the image")
+                return False
+            if len(face_encodings) > 1:
+                print("many faces in the image")
+                return False
+            face_encodings = face_encodings[0]
+            result = db.register_known_face(name,face_encodings , image_path)
+            if result:
+                self.known_face_encodings.append(face_encodings)
+                self.known_face_names.append(name)
+                print(f"Face registered succesfully for : {name}")
+                return True
+            else:
+                print("Failed to register new face.")
+                return False
+        except Exception as e  :
+            print(f"Error registering new face: {e}")
+            return False 
+            
