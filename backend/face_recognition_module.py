@@ -55,3 +55,48 @@ class FaceRecognitionSystem:
             print(f"Error registering new face: {e}")
             return False 
             
+    def detect_and_recognize_faces(self,frame):
+        small_frame = cv2.resize(frame, (0,0), fx = 0.25, fy = 0.25)
+        rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+        if self.process_this_frame:
+            face_locations = fr.face_locations(rgb_small_frame)
+            face_encodings = fr.face_encodings(rgb_small_frame, face_locations)
+            self.face_names=[]
+            self.face_locations=face_locations
+            for face_encoding in face_encodings:
+                matches = fr.compare_faces(self.known_faces_encodings,face_encodings,tolerance= cfg.FACE_DETECTION_CONFIDENCE)
+                name="Unknown"
+                face_distance= fr.face_distance(self.known_face_encodings,face_encodings)
+                if len(face_distance) > 0:
+                    best_match_index = np.argmin(face_distance)
+                    if matches[best_match_index]:
+                        name = self.known_face_names[best_match_index]
+                        db.log_known_detection(name)
+                    self.face_names.append(name)
+            self.process_this_frame = not self.process_this_frame
+            detected_faces = []
+            for ( top,right,bottom,left), name in zip(self.face_locations,self.face_names):
+                top *=4
+                right *=4
+                bottom *=4
+                left *=4
+                if name == "Unknown":
+                    color = (0,0,255)
+                    self.handle_unknown_face(frame, (top,right,bottom,left))
+                else:
+                    color = (0,255,0)
+
+                cv2.rectangle(frame,(left,top),(right,bottom), color,2)
+                cv2.rectangle(frame,(left,bottom - 35),(right,bottom), color,cv2.FILLED)
+                font = cv2.FONT_ITALIC
+                cv2.putText(frame,name,(left+6 ,bottom-6), font,0.6,(255,255,255),1)
+                detected_faces.append({
+                    "name": name,
+                    "location": (top,right,bottom,left)
+                })
+                return detected_faces,frame
+    def handle_unknown_faces(self,frame,location):
+        
+
+                                 
+    
