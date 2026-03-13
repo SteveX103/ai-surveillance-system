@@ -96,7 +96,26 @@ class FaceRecognitionSystem:
                 })
                 return detected_faces,frame
     def handle_unknown_faces(self,frame,location):
-        
+        current_time = dt.now()
+        location_key = str(location)
+        if location_key in self.last_unknown_capture:
+            time_diff = (current_time - self.last_unknown_capture[location_key]).total_seconds()
+            if time_diff< cfg.UNKNOWN_FACE_CAPTTURE_INTERVAL:
+                return
+        top,right,bottom,left = location
+        face_image = frame[top:bottom, left:right]
+        today_folder  = cfg.get_today_folder()
+        timestamp = current_time.strftime("%Y%m%d_%H%M%S")
+        filename = f"Unknown_{timestamp}.jpg"
+        filepath = os.path.join(today_folder,filename)
+        try:
+            cv2.imwrite(filepath , face_image)
+            print(f"Captured unknown face at {timestamp}")
+            db.log_unknown_detection(filepath,current_time)
+            self.last_unknown_capture[location_key] = current_time
+        except Exception as e:      
+            print(f"Error saving unknown face image: {e}")
 
-                                 
-    
+face_recognition_system = FaceRecognitionSystem()
+
+        
