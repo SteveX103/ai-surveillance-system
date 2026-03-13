@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Surveillance System - Live Feed</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .video-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .video-container h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        #videoFeed {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-panel h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .recent-activity {
+            margin-top: 30px;
+        }
+
+        .activity-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .activity-item .time {
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .activity-item .name {
+            font-weight: 600;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .activity-item.unknown {
+            border-left-color: #ef4444;
+        }
+
+        .activity-item.known {
+            border-left-color: #10b981;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span class="status-indicator"></span>
+                AI Surveillance System
+            </h1>
+            <div class="nav-buttons">
+                <a href="/register" class="btn btn-success">➕ Register Face</a>
+                <a href="/admin" class="btn btn-primary">📊 Admin Panel</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="video-container">
+                <h2>🎥 Live Camera Feed</h2>
+                <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Live Feed">
+            </div>
+
+            <div class="info-panel">
+                <h2>📈 Today's Statistics</h2>
+                
+                <div class="stat-card">
+                    <h3>Unknown Faces Today</h3>
+                    <div class="number" id="todayCount">0</div>
+                </div>
+
+                <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <h3>Total Unknown Faces</h3>
+                    <div class="number" id="totalCount">0</div>
+                </div>
+
+                <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <h3>Registered Faces</h3>
+                    <div class="number" id="knownCount">0</div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3 style="color: #333; margin-bottom: 15px;">🕒 Recent Activity</h3>
+                    <div id="recentActivity"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Stats update karo har 5 seconds mein
+        function updateStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('todayCount').textContent = data.today_count;
+                        document.getElementById('totalCount').textContent = data.total_count;
+                        document.getElementById('knownCount').textContent = data.known_faces_count;
+                        
+                        // Recent activity update karo
+                        const activityDiv = document.getElementById('recentActivity');
+                        activityDiv.innerHTML = '';
+                        
+                        data.recent_detections.slice(0, 5).forEach(detection => {
+                            const item = document.createElement('div');
+                            item.className = `activity-item ${detection.type === 'unknown_face' ? 'unknown' : 'known'}`;
+                            
+                            const name = detection.type === 'unknown_face' ? '❓ Unknown Person' : `✅ ${detection.name}`;
+                            
+                            item.innerHTML = `
+                                <div class="time">${detection.time} - ${detection.date}</div>
+                                <div class="name">${name}</div>
+                            `;
+                            
+                            activityDiv.appendChild(item);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching stats:', error));
+        }
+
+        // Initial load
+        updateStats();
+        
+        // Auto refresh har 5 seconds
+        setInterval(updateStats, 5000);
+    </script>
+</body>
+</html>

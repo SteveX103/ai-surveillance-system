@@ -46,5 +46,74 @@ def register_page():
 @app.route('/video_feed')
 def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/api/stats')
+def stats():
+    try:
+        today_count= db.get_unknown_count_today()
+        total_count=db.get_unknown_count_total()
+        recent_detectios= db.get_recent_detections(limit = 10)
+        for detection in recent_detections:
+            detection['_id'] = str(detection['_id'])
+            return jsonify({
+                'success' : True,
+                'today_count': today_count,
+                'total_count': total_count,
+                'recent_detections': recent_detections,
+                'known_faces_count': len(face_system.known_face_names)
+            })
+    except Exception as e:
+        print(f"Error fetching stats: {e}")
+        return jsonify({'success': False, 
+                        'error': 'Failed to fetch stats'}),500
+@app.route('/api/known_faces')
+def get_known_faces():
+    try:
+        faces=db.get_all_known_faces()
+        for face in faces:
+            face['_id'] = str(face['_id'])
+            if 'face_encoding' in face:
+                del face['face_encoding']
+                return jsonify({
+                    'success': True,
+                    'faces':faces
+                })
+    except Exception as e:
+        print(f"Error fetching known faces: {e}")
+        return jsonify({
+            'success': False, 
+            'error': 'Failed to fetch known faces'}),500
+@app.route('/api/register_face', methods = ['POST'])
+def register_face():
+    try:
+        if 'image' not in request.files:
+            return jsonify({
+                'success': False,
+                'error': 'No image provided',
+            }),400
+        if 'name' not in request.form:
+            return jsonify({
+                'success': False,
+                'error': 'Noname provided'
+            }),400
+        image = request.files['image']
+        name = request.form['name']
+        if image.filename == '':
+            return jsonify({
+                'success' :False,
+                'error': 'No selected file'
+            }),400
+        filename = secure_filename(f"{name}_{dt.now().strftime('%Y%m%d%H%M%S')}.jpg")
+        filepath = os.path.join(cfg.KNOWN_FACES_DIR,filename)
+        image.save(filepath)
+        success , message = face_system.register_new_face(filepath,name)
+        return jsonify({
+            'success': success,
+            'message': message
+        })
+    except Exception as e :
+        return jsonify({
+            'success' : False'
+            'message' : str(e)
+        }),500
 
 

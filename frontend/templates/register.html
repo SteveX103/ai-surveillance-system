@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Face - AI Surveillance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #059669;
+            font-size: 2em;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        .webcam-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #webcam {
+            width: 100%;
+            max-width: 640px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+
+        .instructions {
+            background: #f0fdf4;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            margin-bottom: 20px;
+        }
+
+        .instructions h3 {
+            color: #059669;
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            color: #333;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        #preview {
+            max-width: 300px;
+            border-radius: 10px;
+            margin-top: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>➕ Register New Face</h1>
+            <a href="/" class="btn btn-primary">🏠 Back to Home</a>
+        </div>
+
+        <div class="alert" id="alertBox"></div>
+
+        <div class="card">
+            <div class="instructions">
+                <h3>📋 Instructions:</h3>
+                <ul>
+                    <li>Enter the person's name</li>
+                    <li>Click "Start Webcam" to begin</li>
+                    <li>Position your face in the center</li>
+                    <li>Click "Capture Photo" when ready</li>
+                    <li>Review the photo and click "Register Face"</li>
+                </ul>
+            </div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="name">👤 Person Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Enter name (e.g., John Doe)" required>
+                </div>
+
+                <div class="webcam-container">
+                    <video id="webcam" autoplay></video>
+                    <canvas id="canvas"></canvas>
+                    <img id="preview" style="display: none;">
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-primary" id="startWebcam">📹 Start Webcam</button>
+                    <button type="button" class="btn btn-secondary" id="captureBtn" style="display: none;">📸 Capture Photo</button>
+                    <button type="button" class="btn btn-danger" id="retakeBtn" style="display: none;">🔄 Retake</button>
+                    <button type="submit" class="btn btn-primary" id="registerBtn" style="display: none;">✅ Register Face</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>📁 Or Upload Image</h2>
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label for="uploadName">👤 Person Name:</label>
+                    <input type="text" id="uploadName" name="uploadName" placeholder="Enter name" required>
+                </div>
+                <div class="form-group">
+                    <label for="imageFile">📷 Select Image:</label>
+                    <input type="file" id="imageFile" name="imageFile" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-primary">⬆️ Upload & Register</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let stream = null;
+        let capturedImage = null;
+
+        const webcam = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const preview = document.getElementById('preview');
+        const startWebcamBtn = document.getElementById('startWebcam');
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const alertBox = document.getElementById('alertBox');
+
+        function showAlert(message, type) {
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'block';
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 5000);
+        }
+
+        startWebcamBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                webcam.srcObject = stream;
+                webcam.style.display = 'block';
+                startWebcamBtn.style.display = 'none';
+                captureBtn.style.display = 'inline-block';
+                showAlert('Webcam started! Position your face and click Capture.', 'info');
+            } catch (error) {
+                showAlert('Error accessing webcam: ' + error.message, 'error');
+            }
+        });
+
+        captureBtn.addEventListener('click', () => {
+            canvas.width = webcam.videoWidth;
+            canvas.height = webcam.videoHeight;
+            canvas.getContext('2d').drawImage(webcam, 0, 0);
+            
+            capturedImage = canvas.toDataURL('image/jpeg');
+            preview.src = capturedImage;
+            preview.style.display = 'block';
+            
+            webcam.style.display = 'none';
+            captureBtn.style.display = 'none';
+            retakeBtn.style.display = 'inline-block';
+            registerBtn.style.display = 'inline-block';
+            
+            showAlert('Photo captured! Review and click Register.', 'success');
+        });
+
+        retakeBtn.addEventListener('click', () => {
+            webcam.style.display = 'block';
+            preview.style.display = 'none';
+            captureBtn.style.display = 'inline-block';
+            retakeBtn.style.display = 'none';
+            registerBtn.style.display = 'none';
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            
+            if (!name) {
+                showAlert('Please enter a name', 'error');
+                return;
+            }
+            
+            if (!capturedImage) {
+                showAlert('Please capture a photo first', 'error');
+                return;
+            }
+            
+            registerBtn.disabled = true;
+            registerBtn.textContent = '⏳ Registering...';
+            
+            try {
+                const response = await fetch('/api/capture_from_webcam', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        image: capturedImage
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`✅ ${data.message}`, 'success');
+                    
+                    // Reset form
+                    document.getElementById('name').value = '';
+                    preview.style.display = 'none';
+                    capturedImage = null;
+                    retakeBtn.style.display = 'none';
+                    registerBtn.style.display = 'none';
+                    startWebcamBtn.style.display = 'inline-block';
+                    
+                    // Stop webcam
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                        stream = null;
+                    }
+                } else {
+                    showAlert(`❌ ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert('Error registering face: ' + error.message, 'error');
+            }
+            
+            registerBtn.disabled = false;
+            registerBtn.textContent = '✅ Register Face';
+        });
+
+        // Upload form
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('uploadName').value.trim();
+            const imageFile = document.getElementById('imageFile').files[0];
+            
+            if (!name || !imageFile) {
+                showAlert('Please enter name and select image', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('image', imageFile);
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Uploading...';
+            
+            try {
+                const response = await fetch('/api/register_face', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`✅ ${data.message}`, 'success');
+                    document.getElementById('uploadForm').reset();
+                } else {
+                    showAlert(`❌ ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert('Error uploading: ' + error.message, 'error');
+            }
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = '⬆️ Upload & Register';
+        });
+    </script>
+</body>
+</html>
