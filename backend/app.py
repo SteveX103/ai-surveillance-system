@@ -115,5 +115,25 @@ def register_face():
             'success' : False'
             'message' : str(e)
         }),500
-
+app.route('/api/delete_face/<name>', methods = ['DELETE'])
+def delete_face(name):
+    try:
+        success= db.delete_known_face(name)
+        if success:
+            face_system.load_known_faces()
+            return jsonify({
+                'success': True,
+                'message': f'Face {name} deleted successfully'
+            })
+        else:
+            return jsonify({
+                'success ': False,
+                'message': 'Face not ffound'
+            })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }),500
+    
 
