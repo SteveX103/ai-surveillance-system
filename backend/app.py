@@ -135,5 +135,44 @@ def delete_face(name):
             'success': False,
             'message': str(e)
         }),500
+@app.route('/api/capture_from_webcam', methods=['POST'])
+def capture_from_webcam():
+    try:
+        data = request.get_json()
+        image_data = data.get('image')
+        name= data.get('name')
+        if not image_data or not name:
+            return jsonify({
+                'success': False,
+                'error': 'Image data and name are required'
+            }),400
+        image_data = image_data.split(',')[1]
+        image_bytes=base64.b64decode(image_data)
+        filename = secure_filename(f"{name}_{dt.now().strftime('%Y%m%d%H%M%S')}.jpg")
+        filepath = os.path.join(cfg.KNOWN_FACES_DIR, filename)
+        with open(filepath, 'wb') as f:
+            f.write(image_bytes)
+            success, message = face_system.register_new_face(filepath, name)
+        return jsonify({
+            'success': success,
+            'message': message
+        })  
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }),500
+if __name__ == '__main__':
+    print("Starting AI Surveillance System...")
+    print(f"Camera Index: {cfg.CAMERA_INDEX}")
+    print(f"Database: {cfg.DB_NAME}")
+    print(f"Server: http://localhost:5000")
+    print("\nAccess Points:")
+    print("   - Live Feed: http://localhost:5000")
+    print("   - Admin Panel: http://localhost:5000/admin")
+    print("   - Register Face: http://localhost:5000/register")
+    print("\n" + "="*50 + "\n")
     
+    app.run(debug=True, host='0.0.0.0', port=5000, threaded=True)
+
 
