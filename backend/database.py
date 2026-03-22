@@ -66,7 +66,7 @@ class Database:
             return 0
     def get_recent_detections(self, limit=10):
         try:
-            detections = self.logs_collections.find().sort("timestamp", -1).limit(limit)
+            detections = self.logs_collection.find().sort("timestamp", -1).limit(limit)
             return list(detections)
         except Exception as e:  
             print ("Error getting recent detections:", e)

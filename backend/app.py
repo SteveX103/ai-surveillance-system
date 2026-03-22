@@ -1,5 +1,6 @@
 from database import db
-from face_recognition_module import face_system
+from face_recognition_module import FaceRecognitionSystem
+face_system = FaceRecognitionSystem()
 from datetime import datetime as dt
 import configure as cfg
 import os 
@@ -27,8 +28,12 @@ def generate_frames():
     while True:
         success , frame = cam.read()
         if not success:
-            break
+           cam.release()
+           break
         processed_frame , detected_faces = face_system.detect_and_recognize_faces(frame)
+        if processed_frame is None:
+            continue
+
         ret,buffer = cv2.imencode('.jpg', processed_frame)
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
@@ -37,24 +42,29 @@ def generate_frames():
 @app.route('/')
 def index():
     return render_template('index.html')
+
 @app.route('/admin')
 def admin():
     return render_template('admin.html')
+
 @app.route('/register')
 def register_page():
     return render_template('register.html')
+
 @app.route('/video_feed')
 def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 @app.route('/api/stats')
 def stats():
     try:
         today_count= db.get_unknown_count_today()
         total_count=db.get_unknown_count_total()
-        recent_detectios= db.get_recent_detections(limit = 10)
+        recent_detections= db.get_recent_detections(limit = 10)
         for detection in recent_detections:
             detection['_id'] = str(detection['_id'])
-            return jsonify({
+
+        return jsonify({
                 'success' : True,
                 'today_count': today_count,
                 'total_count': total_count,
@@ -73,10 +83,11 @@ def get_known_faces():
             face['_id'] = str(face['_id'])
             if 'face_encoding' in face:
                 del face['face_encoding']
-                return jsonify({
+
+        return jsonify({
                     'success': True,
                     'faces':faces
-                })
+            })
     except Exception as e:
         print(f"Error fetching known faces: {e}")
         return jsonify({
@@ -112,7 +123,7 @@ def register_face():
         })
     except Exception as e :
         return jsonify({
-            'success' : False'
+            'success' : False,
             'message' : str(e)
         }),500
 app.route('/api/delete_face/<name>', methods = ['DELETE'])
@@ -162,6 +173,15 @@ def capture_from_webcam():
             'success': False,
             'message': str(e)
         }),500
+
+@app.route('/release_camera')
+def release_camera():
+    global camera
+    if camera is not None:
+        camera.release()
+        camera = None
+    return "Camera released"
+
 if __name__ == '__main__':
     print("Starting AI Surveillance System...")
     print(f"Camera Index: {cfg.CAMERA_INDEX}")
@@ -174,5 +194,3 @@ if __name__ == '__main__':
     print("\n" + "="*50 + "\n")
     
     app.run(debug=True, host='0.0.0.0', port=5000, threaded=True)
-
-

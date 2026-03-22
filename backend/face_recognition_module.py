@@ -17,14 +17,14 @@ class FaceRecognitionSystem:
 
     def load_known_faces(self):
         print("Loading known faces from database...")
-        known_faces = db.get_all_knoewn_faces()
+        known_faces = db.get_all_known_faces()
         self.known_face_encodings = []
         self.known_face_names = []
         for face_data in known_faces:
             try:
                 encoding = np.array(face_data['face_encoding'])
-                self.known_faces_encodings.append(encoding)
-                self.known_faces_names.append(face_data['name'])
+                self.known_face_encodings.append(encoding)
+                self.known_face_names.append(face_data['name'])
                 print(f"Loaded known face: {face_data['name']}")
             except Exception as e:
                 print(f"Error loading known face {face_data['name']}: {e}")
@@ -56,17 +56,22 @@ class FaceRecognitionSystem:
             return False 
             
     def detect_and_recognize_faces(self,frame):
+        if frame is None:
+            return None, []
         small_frame = cv2.resize(frame, (0,0), fx = 0.25, fy = 0.25)
+        if small_frame is None or small_frame.dtype != 'unit8':
+            return frame,[]
         rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+        rgb_small_frame = rgb_small_frame.astype('uint8')
         if self.process_this_frame:
             face_locations = fr.face_locations(rgb_small_frame)
             face_encodings = fr.face_encodings(rgb_small_frame, face_locations)
             self.face_names=[]
             self.face_locations=face_locations
             for face_encoding in face_encodings:
-                matches = fr.compare_faces(self.known_faces_encodings,face_encodings,tolerance= cfg.FACE_DETECTION_CONFIDENCE)
+                matches = fr.compare_faces(self.known_face_encodings,face_encoding,tolerance= cfg.FACE_DETECTION_CONFIDENCE)
                 name="Unknown"
-                face_distance= fr.face_distance(self.known_face_encodings,face_encodings)
+                face_distance= fr.face_distance(self.known_face_encodings,face_encoding)
                 if len(face_distance) > 0:
                     best_match_index = np.argmin(face_distance)
                     if matches[best_match_index]:
@@ -94,7 +99,8 @@ class FaceRecognitionSystem:
                     "name": name,
                     "location": (top,right,bottom,left)
                 })
-                return detected_faces,frame
+
+            return frame , detected_faces
     def handle_unknown_faces(self,frame,location):
         current_time = dt.now()
         location_key = str(location)
