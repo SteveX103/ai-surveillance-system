@@ -80,6 +80,15 @@
             background: #dc2626;
         }
 
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
         .card {
             background: rgba(255, 255, 255, 0.95);
             padding: 30px;
@@ -168,6 +177,12 @@
             border: 1px solid #3b82f6;
         }
 
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+
         .instructions {
             background: #f0fdf4;
             padding: 20px;
@@ -196,6 +211,24 @@
             margin-top: 15px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
+
+        .troubleshooting {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            margin-bottom: 20px;
+        }
+
+        .troubleshooting h4 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+
+        .troubleshooting ul {
+            margin-left: 20px;
+            color: #92400e;
+        }
     </style>
 </head>
 <body>
@@ -207,10 +240,23 @@
 
         <div class="alert" id="alertBox"></div>
 
+        <!-- Troubleshooting Guide -->
+        <div class="troubleshooting" id="troubleshootingBox" style="display: none;">
+            <h4>⚠️ Webcam Error? Try These Steps:</h4>
+            <ul>
+                <li>✅ Close the "Live Feed" tab (main page)</li>
+                <li>✅ Close other apps using camera (Zoom, Teams, Skype)</li>
+                <li>✅ Refresh this page</li>
+                <li>✅ Use "Upload Image" option below instead</li>
+            </ul>
+            <button class="btn btn-warning" onclick="hideError()">Got it!</button>
+        </div>
+
         <div class="card">
             <div class="instructions">
                 <h3>📋 Instructions:</h3>
                 <ul>
+                    <li>⚠️ <strong>Important:</strong> Close the "Live Feed" tab before using webcam here</li>
                     <li>Enter the person's name</li>
                     <li>Click "Start Webcam" to begin</li>
                     <li>Position your face in the center</li>
@@ -222,7 +268,7 @@
             <form id="registerForm">
                 <div class="form-group">
                     <label for="name">👤 Person Name:</label>
-                    <input type="text" id="name" name="name" placeholder="Enter name (e.g., John Doe)" required>
+                    <input type="text" id="name" name="name" placeholder="Enter name (Example : Pratyush Biswas)" required>
                 </div>
 
                 <div class="webcam-container">
@@ -242,10 +288,13 @@
 
         <div class="card">
             <h2>📁 Or Upload Image</h2>
+            <div class="alert alert-info" style="display: block;">
+                💡 <strong>Recommended if webcam is not working:</strong> Upload a clear photo instead!
+            </div>
             <form id="uploadForm">
                 <div class="form-group">
                     <label for="uploadName">👤 Person Name:</label>
-                    <input type="text" id="uploadName" name="uploadName" placeholder="Enter name" required>
+                    <input type="text" id="uploadName" name="uploadName" placeholder="Enter name (Example : Pratyush Biswas)" required>
                 </div>
                 <div class="form-group">
                     <label for="imageFile">📷 Select Image:</label>
@@ -257,6 +306,7 @@
     </div>
 
     <script>
+        
         let stream = null;
         let capturedImage = null;
 
@@ -268,28 +318,67 @@
         const retakeBtn = document.getElementById('retakeBtn');
         const registerBtn = document.getElementById('registerBtn');
         const alertBox = document.getElementById('alertBox');
+        const troubleshootingBox = document.getElementById('troubleshootingBox');
 
         function showAlert(message, type) {
             alertBox.textContent = message;
             alertBox.className = `alert alert-${type}`;
             alertBox.style.display = 'block';
-            setTimeout(() => {
-                alertBox.style.display = 'none';
-            }, 5000);
+            
+            // Auto hide after 5 seconds (except errors)
+            if (type !== 'error') {
+                setTimeout(() => {
+                    alertBox.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function showTroubleshooting() {
+            troubleshootingBox.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideError() {
+            troubleshootingBox.style.display = 'none';
         }
 
         startWebcamBtn.addEventListener('click', async () => {
             try {
+                await fetch('/release_camera');
+                // Request camera access
                 stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: 640, height: 480 } 
+                    video: { 
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    } 
                 });
+                
                 webcam.srcObject = stream;
                 webcam.style.display = 'block';
                 startWebcamBtn.style.display = 'none';
                 captureBtn.style.display = 'inline-block';
-                showAlert('Webcam started! Position your face and click Capture.', 'info');
+                showAlert('✅ Webcam started! Position your face and click Capture.', 'success');
+                
+                // Hide troubleshooting if shown
+                hideError();
+                
             } catch (error) {
-                showAlert('Error accessing webcam: ' + error.message, 'error');
+                console.error('Webcam error:', error);
+                
+                let errorMessage = 'Error accessing webcam: ';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage += 'Camera permission denied. Please allow camera access.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage += 'No camera found. Please connect a camera.';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage += 'Camera is already in use. Please close other apps/tabs using it.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showAlert(errorMessage, 'error');
+                showTroubleshooting();
             }
         });
 
@@ -307,15 +396,31 @@
             retakeBtn.style.display = 'inline-block';
             registerBtn.style.display = 'inline-block';
             
-            showAlert('Photo captured! Review and click Register.', 'success');
+            // Stop webcam stream
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            
+            showAlert('📸 Photo captured! Review and click Register.', 'success');
         });
 
-        retakeBtn.addEventListener('click', () => {
-            webcam.style.display = 'block';
-            preview.style.display = 'none';
-            captureBtn.style.display = 'inline-block';
-            retakeBtn.style.display = 'none';
-            registerBtn.style.display = 'none';
+        retakeBtn.addEventListener('click', async () => {
+            try {
+                // Restart webcam
+                await fetch('/release_camera');
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                
+                webcam.srcObject = stream;
+                webcam.style.display = 'block';
+                preview.style.display = 'none';
+                captureBtn.style.display = 'inline-block';
+                retakeBtn.style.display = 'none';
+                registerBtn.style.display = 'none';
+            } catch (error) {
+                showAlert('Error restarting webcam: ' + error.message, 'error');
+            }
         });
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
@@ -360,12 +465,6 @@
                     retakeBtn.style.display = 'none';
                     registerBtn.style.display = 'none';
                     startWebcamBtn.style.display = 'inline-block';
-                    
-                    // Stop webcam
-                    if (stream) {
-                        stream.getTracks().forEach(track => track.stop());
-                        stream = null;
-                    }
                 } else {
                     showAlert(`❌ ${data.message}`, 'error');
                 }
@@ -417,6 +516,13 @@
             
             submitBtn.disabled = false;
             submitBtn.textContent = '⬆️ Upload & Register';
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
         });
     </script>
 </body>
