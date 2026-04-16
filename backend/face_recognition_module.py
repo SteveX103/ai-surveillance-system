@@ -16,7 +16,7 @@ class FaceRecognitionSystem:
         self.load_known_faces()
 
     def load_known_faces(self):
-        print("Loading known faces from database...")
+        print("Loading known faces from Database....")
         known_faces = db.get_all_known_faces()
         self.known_face_encodings = []
         self.known_face_names = []
@@ -25,7 +25,7 @@ class FaceRecognitionSystem:
                 encoding = np.array(face_data['face_encoding'])
                 self.known_face_encodings.append(encoding)
                 self.known_face_names.append(face_data['name'])
-                print(f"Loaded known face: {face_data['name']}")
+                print(f"Loaded known facew: {face_data['name']}")
             except Exception as e:
                 print(f"Error loading known face {face_data['name']}: {e}")
 
@@ -116,7 +116,7 @@ class FaceRecognitionSystem:
         filepath = os.path.join(today_folder,filename)
         try:
             cv2.imwrite(filepath , face_image)
-            print(f"Captured unknown face at {timestamp}")
+            print(f"Captured unknown facee at {timestamp}")
             db.log_unknown_detection(filepath,current_time)
             self.last_unknown_capture[location_key] = current_time
         except Exception as e:      
