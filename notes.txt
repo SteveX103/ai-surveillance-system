@@ -7,15 +7,15 @@ venv\Scripts\activate
 
 then install:
 
-flask
-flask-cors
-opencv-python
-pymongo
-pillow
-numpy
-python-dotenv
-dnspython
+pip install flask
+pip install flask-cors
+pip install opencv-python
+pip install pymongo
+pip install pillow
+pip install numpy
+pip install python-dotenv
+pip install dnspython
 pip install dlib-19.24.1-cp311-cp311-win_amd64.whl
-face-recognition
+pip install face-recognition
 
 

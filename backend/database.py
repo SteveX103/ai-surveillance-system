@@ -17,7 +17,7 @@ class Database:
         try :
            if timestamp is None:
               timestamp = dt.now()
-              log_entry ={
+           log_entry ={
                "type": "unknown_face",
                "timestamp": timestamp,
                "date": timestamp.strftime("%Y-%m-%d"),
@@ -28,19 +28,19 @@ class Database:
         except Exception as e:
             print ("Error logging unknown detection:", e)
             return None
-    def log_knwon_detection(self, name , image_path,timestamp=None):
+    def log_known_detection(self, name , image_path=None, timestamp=None):
        try:
           if timestamp is None:
              timestamp = dt.now()
-             log_entry ={
-                "type": "known_face",
-                "name": name,
-                "timestamp": timestamp,
-                "date": timestamp.strftime("%Y-%m-%d"),
-                "time": timestamp.strftime("%H:%M:%S"),
-             }
-             result = self.logs_collection.insert_one(log_entry)
-             return str(result.inserted_id)
+          log_entry ={
+              "type": "known_face",
+              "name": name,
+              "timestamp": timestamp,
+              "date": timestamp.strftime("%Y-%m-%d"),
+              "time": timestamp.strftime("%H:%M:%S"),
+           }
+          result = self.logs_collection.insert_one(log_entry)
+          return str(result.inserted_id)
        except Exception as e:
           print ("Error logging known detection:", e)
           return None

@@ -104,7 +104,7 @@ def register_face():
         if 'name' not in request.form:
             return jsonify({
                 'success': False,
-                'error': 'Noname provided'
+                'error': 'No name provided'
             }),400
         image = request.files['image']
         name = request.form['name']
@@ -126,7 +126,7 @@ def register_face():
             'success' : False,
             'message' : str(e)
         }),500
-app.route('/api/delete_face/<name>', methods = ['DELETE'])
+@app.route('/api/delete_face/<name>', methods = ['DELETE'])
 def delete_face(name):
     try:
         success= db.delete_known_face(name)
@@ -138,8 +138,8 @@ def delete_face(name):
             })
         else:
             return jsonify({
-                'success ': False,
-                'message': 'Face not ffound'
+                'success': False,
+                'message': 'Face not found'
             })
     except Exception as e:
         return jsonify({
@@ -163,7 +163,7 @@ def capture_from_webcam():
         filepath = os.path.join(cfg.KNOWN_FACES_DIR, filename)
         with open(filepath, 'wb') as f:
             f.write(image_bytes)
-            success, message = face_system.register_new_face(filepath, name)
+        success, message = face_system.register_new_face(filepath, name)
         return jsonify({
             'success': success,
             'message': message
