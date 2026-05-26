@@ -7,12 +7,13 @@ venv\Scripts\activate
 
 then install:
 
+numpy==1.26.4
+pip install opencv-python==4.9.0.80
+pip install cmake
 flask
 flask-cors
-opencv-python
 pymongo
 pillow
-numpy
 python-dotenv
 dnspython
 pip install dlib-19.24.1-cp311-cp311-win_amd64.whl
