@@ -1,4 +1,11 @@
 # Virtual Environment
 venv/
 venv
-#detection
+
+# Ignore everything inside known_face except .gitkeep
+known_face/*
+!known_face/.gitkeep
+
+# Ignore everything inside unknown_faces except .gitkeep
+unknown_faces/*
+!unknown_faces/.gitkeep
