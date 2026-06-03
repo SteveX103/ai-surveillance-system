@@ -204,7 +204,7 @@ class FaceRecognitionSystem:
         
         detected_faces = []
         for (top, right, bottom, left), name in zip(self.face_locations, self.face_names):
-            s
+            
             top *= 4
             right *= 4
             bottom *= 4

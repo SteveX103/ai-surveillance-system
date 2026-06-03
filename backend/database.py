@@ -1,6 +1,9 @@
 from pymongo import MongoClient as mc
 from datetime import datetime as dt
 import configure as cfg
+from pymongo import MongoClient as mc
+from datetime import datetime as dt
+import configure as cfg
 
 class Database:
     def __init__ (self):
@@ -14,36 +17,38 @@ class Database:
          print ("Error connecting to MongoDB:", e)
 
     def log_unknown_detection(self, image_path, timestamp=None):
-        try :
-           if timestamp is None:
-              timestamp = dt.now()
-              log_entry ={
-               "type": "unknown_face",
-               "timestamp": timestamp,
-               "date": timestamp.strftime("%Y-%m-%d"),
-               "time": timestamp.strftime("%H:%M:%S"),
-            }
-           result = self.logs_collection.insert_one(log_entry)
-           return str(result.inserted_id)
-        except Exception as e:
-            print ("Error logging unknown detection:", e)
-            return None
-    def log_knwon_detection(self, name , image_path,timestamp=None):
-       try:
-          if timestamp is None:
-             timestamp = dt.now()
-             log_entry ={
-                "type": "known_face",
-                "name": name,
+        try:
+            if timestamp is None:
+                timestamp = dt.now()
+            log_entry = {
+                "type": "unknown_face",
+                "image_path": image_path,
                 "timestamp": timestamp,
                 "date": timestamp.strftime("%Y-%m-%d"),
                 "time": timestamp.strftime("%H:%M:%S"),
-             }
-             result = self.logs_collection.insert_one(log_entry)
-             return str(result.inserted_id)
-       except Exception as e:
-          print ("Error logging known detection:", e)
-          return None
+            }
+            result = self.logs_collection.insert_one(log_entry)
+            return str(result.inserted_id)
+        except Exception as e:
+            print("Error logging unknown detection:", e)
+            return None
+    def log_known_detection(self, name, image_path, timestamp=None):
+        try:
+            if timestamp is None:
+                timestamp = dt.now()
+            log_entry = {
+                "type": "known_face",
+                "name": name,
+                "image_path": image_path,
+                "timestamp": timestamp,
+                "date": timestamp.strftime("%Y-%m-%d"),
+                "time": timestamp.strftime("%H:%M:%S"),
+            }
+            result = self.logs_collection.insert_one(log_entry)
+            return str(result.inserted_id)
+        except Exception as e:
+            print("Error logging known detection:", e)
+            return None
     def get_unknown_count_today(self):
         try:
             today = dt.now().strftime("%Y-%m-%d")
@@ -100,8 +105,7 @@ class Database:
         except Exception as e:  
             print ("Error deleting known face:", e)
             return False
-        
-db= Database()
+db = Database()
 
 
             
